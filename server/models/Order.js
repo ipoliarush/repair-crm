@@ -13,7 +13,19 @@ const OrderSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    default: "new"
+    enum: [
+      "in_progress",
+      "after_visit",
+      "parts",
+      "workshop_repair",
+      "workshop_diagnostics",
+      "info_insurance",
+      "waiting_decision",
+      "invoice",
+      "closed",
+      "consultation"
+    ],
+    default: "in_progress"
   },
 
   user: {
