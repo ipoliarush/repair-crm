@@ -11,6 +11,44 @@ const form = ref({
   problem: ""
 })
 
+const statuses = [
+  "in_progress",
+  "after_visit",
+  "parts",
+  "workshop_repair",
+  "workshop_diagnostics",
+  "info_insurance",
+  "waiting_decision",
+  "invoice",
+  "closed",
+  "consultation"
+]
+
+const statusLabels = {
+  in_progress: "w toku",
+  after_visit: "po wizycie",
+  parts: "części",
+  workshop_repair: "naprawa warsztat",
+  workshop_diagnostics: "diagnostyka warsztat",
+  info_insurance: "inf - TU",
+  waiting_decision: "oczekiwanie decyzji",
+  invoice: "fv/rozliczenie",
+  closed: "zamknięte",
+  consultation: "konsultacja"
+}
+
+const updateStatus = async (orderId, status) => {
+  await api.put(`/orders/${orderId}`, { status })
+  loadOrders()
+}
+
+const deleteOrder = async (orderId) => {
+  if (confirm("Видалити замовлення?")) {
+    await api.delete(`/orders/${orderId}`)
+    loadOrders()
+  }
+}
+
 const loadOrders = async () => {
   const res = await api.get("/orders")
   orders.value = res.data
@@ -56,7 +94,20 @@ onMounted(loadOrders)
     <div v-for="order in orders" :key="order._id">
       <p><b>{{ order.clientName }}</b></p>
       <p>{{ order.deviceType }}</p>
-      <p>{{ statusLabels[order.status] || order.status }}</p>
+
+      <!-- 🔄 статус -->
+      <select
+        :value="order.status"
+        @change="e => updateStatus(order._id, e.target.value)"
+      >
+        <option v-for="s in statuses" :key="s" :value="s">
+          {{ statusLabels[s] }}
+        </option>
+      </select>
+
+      <!-- 🗑️ delete -->
+      <button @click="deleteOrder(order._id)">Delete</button>
+
       <hr />
     </div>
   </div>
