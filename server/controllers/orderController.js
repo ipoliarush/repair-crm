@@ -15,7 +15,20 @@ export const createOrder = async (req, res) => {
 
 export const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+    const { search } = req.query
+
+    let query = {}
+
+    if (search) {
+      query = {
+        $or: [
+          { clientName: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } }
+        ]
+      }
+    }
+
+    const orders = await Order.find(query)
       .populate("user", "name email")
       .sort({ createdAt: -1 })
 

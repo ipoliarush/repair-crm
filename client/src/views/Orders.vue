@@ -50,7 +50,10 @@ const deleteOrder = async (orderId) => {
 }
 
 const loadOrders = async () => {
-  const res = await api.get("/orders")
+  const res = await api.get("/orders", {
+    params: { search: search.value }
+  })
+
   orders.value = res.data
 }
 
@@ -88,11 +91,23 @@ const cancelEdit = () => {
   editingId.value = null
 }
 
+const search = ref("")
+let timeout = null
+
+const handleSearch = () => {
+  clearTimeout(timeout)
+
+  timeout = setTimeout(() => {
+    loadOrders()
+  }, 400)
+}
+
 onMounted(loadOrders)
 </script>
 
 <template>
   <div>
+
     <h1>Orders</h1>
 
     <!-- 🔥 Форма -->
@@ -110,6 +125,13 @@ onMounted(loadOrders)
     <hr />
 
     <!-- 📦 Список -->
+
+    <input
+      v-model="search"
+      @input="handleSearch"
+      placeholder="Search by name or phone"
+    />
+
     <div v-for="order in orders" :key="order._id">
 
       <!-- ✏️ режим редагування -->
