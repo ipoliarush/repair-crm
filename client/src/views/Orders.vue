@@ -69,6 +69,25 @@ const createOrder = async () => {
   loadOrders()
 }
 
+const editingId = ref(null)
+const editForm = ref({})
+
+const startEdit = (order) => {
+  editingId.value = order._id
+  editForm.value = { ...order }
+}
+
+const saveEdit = async () => {
+  await api.put(`/orders/${editingId.value}`, editForm.value)
+
+  editingId.value = null
+  loadOrders()
+}
+
+const cancelEdit = () => {
+  editingId.value = null
+}
+
 onMounted(loadOrders)
 </script>
 
@@ -92,21 +111,35 @@ onMounted(loadOrders)
 
     <!-- 📦 Список -->
     <div v-for="order in orders" :key="order._id">
-      <p><b>{{ order.clientName }}</b></p>
-      <p>{{ order.deviceType }}</p>
 
-      <!-- 🔄 статус -->
-      <select
-        :value="order.status"
-        @change="e => updateStatus(order._id, e.target.value)"
-      >
-        <option v-for="s in statuses" :key="s" :value="s">
-          {{ statusLabels[s] }}
-        </option>
-      </select>
+      <!-- ✏️ режим редагування -->
+      <div v-if="editingId === order._id">
+        <input v-model="editForm.clientName" />
+        <input v-model="editForm.phone" />
+        <input v-model="editForm.deviceType" />
+        <input v-model="editForm.problem" />
 
-      <!-- 🗑️ delete -->
-      <button @click="deleteOrder(order._id)">Delete</button>
+        <button @click="saveEdit">Save</button>
+        <button @click="cancelEdit">Cancel</button>
+      </div>
+
+      <!-- 📦 звичайний режим -->
+      <div v-else>
+        <p><b>{{ order.clientName }}</b></p>
+        <p>{{ order.deviceType }}</p>
+
+        <select
+          :value="order.status"
+          @change="e => updateStatus(order._id, e.target.value)"
+        >
+          <option v-for="s in statuses" :key="s" :value="s">
+            {{ statusLabels[s] }}
+          </option>
+        </select>
+
+        <button @click="startEdit(order)">Edit</button>
+        <button @click="deleteOrder(order._id)">Delete</button>
+      </div>
 
       <hr />
     </div>
